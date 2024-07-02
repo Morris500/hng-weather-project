@@ -10,6 +10,7 @@
   "version": "1.0.0",
   "main": "weather.js",
   "scripts": {
+    "dev": "nodemon weather.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
