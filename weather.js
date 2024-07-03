@@ -37,8 +37,7 @@ app.get('/',  (req, res) => {
 
         
         const locationResponse = await ipinfo.lookupIp(Ip).catch((err)=> console.log("err"));
-         console.log( locationResponse.city);
-
+         
         const city = locationResponse.city;
 
         const url =" https://api.openweathermap.org/data/2.5/weather?q="+ city +"&appid="+process.env.CLIENT_ID
