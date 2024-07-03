@@ -51,7 +51,7 @@ app.get('/',  (req, res) => {
 
         const greeting = `Hello ${person}!, the temperature is ${temp}°C in ${city}`;
 
-        res.send({
+        res.json({
             client_ip: Ip,
             Location: city,
             greeting,
