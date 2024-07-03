@@ -1,5 +1,5 @@
 {
      "version": 2,
-     "build":[{"source": "./weather.js", "use": "@vercel/node"}], 
-"routes": [{ "source": "/(.*)", "destination": "/"}] 
+     "builds":[{"source": "./weather.js", "use": "@vercel/node"}], 
+"routes": [{ "source": "/(.*)", "destination": "/weather.js"}] 
 }
