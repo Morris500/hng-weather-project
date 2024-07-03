@@ -2,55 +2,75 @@ require("dotenv").config();
 const express = require('express');
 const https = require('https');
 const bodyParser = require('body-parser');
-
+const { IPinfoWrapper } = require('node-ipinfo');
+const axios = require('axios');
 
 const app = express();
 const port = 3000;
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
-app.set("view engine", "ejs");
 
-app.get("/", function (req, res) {
-  const ip = req.ip;
-res.sendFile(__dirname + "/index.html");
+const ipinfoToken = process.env.ACCESS_TOKEN;
+const ipinfo = new IPinfoWrapper(ipinfoToken);
 
 
-app.post("/", function (req, res) {
-  console.log(req.ip + "from post");
-const citydata = req.body.cityName; 
-const person = req.body.person;
+async function externalIp() {
+    const response = await axios.get('https://api.ipify.org?format=json')
+    return response.data.ip;
+}
 
-const url =" https://api.openweathermap.org/data/2.5/weather?q="+ citydata +"&appid="+process.env.CLIENT_ID
+app.get('/',  (req, res) => {
+    
+  res.sendFile(__dirname + "/index.html");
 
-https.get(url, function (response) {
-  console.log(response.statusCode);
-
-response.on("data", function(data){
-const weatherData = JSON.parse(data);
-
-  const temp = weatherData.main.temp
+    app.post("/", async function  (req, res) {
   
-const weatherDescription = weatherData.weather[0].description;
-const icon = weatherData.weather[0].icon;
+      const person = req.body.person;
+      
+      try {
+        let Ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
-const imageUrl =" https://openweathermap.org/img/wn/"+icon+"@2x.png"
+        if (Ip === '::1' || Ip === '127.0.0.1') {
+            Ip = await externalIp();
+        }
 
-  
-res.render("index",{
-  ip,
-  temp,
-  imageUrl,
-  person,
-  citydata
+        
+        const locationResponse = await ipinfo.lookupIp(Ip).catch((err)=> console.log("err"));
+         console.log( locationResponse.city);
+
+        const city = locationResponse.city;
+
+        const url =" https://api.openweathermap.org/data/2.5/weather?q="+ city +"&appid="+process.env.CLIENT_ID
+      
+      https.get(url, function (response) {
+      
+      response.on("data", function(data){
+      const weatherData = JSON.parse(data);
+        const temp = weatherData.main.temp;
+
+        const greeting = `Hello ${person}!, the temperature is ${temp}°C in ${city}`;
+
+        res.send({
+            client_ip: Ip,
+            Location: city,
+            greeting,
+        });
+        
+       });
+      });
+
+     
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({
+            message: 'Error Fetching Data'
+        });
+    }
+
 });
 
- });
 });
-
- } );
-});
-
 
 app.listen(port, function () { console.log("server is running on port 3000")
 
