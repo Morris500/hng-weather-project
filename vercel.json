@@ -1,5 +1,15 @@
 {
-     "version": 2,
-     "builds":[{"source": "./weather.js", "use": "@vercel/node"}], 
-"routes": [{ "source": "/(.*)", "destination": "/weather.js"}] 
+    "version": 2,
+    "builds": [
+      {
+        "src": "weather.js",
+        "use": "@vercel/node"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/api/hello",
+        "dest": "/weather.js"
+      }
+    ]
 }
